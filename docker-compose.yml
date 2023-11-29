@@ -1,0 +1,11 @@
+version: "3.9"
+services:
+  postgres_db:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_DB: help_your_city_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: adrine2007
+    ports:
+      -"5432":"5432"
