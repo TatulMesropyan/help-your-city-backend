@@ -23,7 +23,6 @@ type PostgresStore struct {
 }
 
 func (store *PostgresStore) RegisterUser(user *models.User) error {
-	fmt.Println(user.FirstName)
 	query := `
         INSERT INTO users ("firstName", "lastName", email, birthday, password, phone)
         VALUES ($1, $2, $3, $4, $5, $6)
@@ -50,22 +49,41 @@ func (store *PostgresStore) SignInUser(email, password string) (string, error) {
 	return "User authenticated successfully", nil
 }
 
-func (store *PostgresStore) ChangePassword(email, password string) (string, error) {
+func (store *PostgresStore) ChangePassword(id, password string) (string, error) {
 	var storedPassword string
-	query := `SELECT password FROM users WHERE email = $1`
-	err := store.db.QueryRow(query, email).Scan(&storedPassword)
+	query := `SELECT password FROM users WHERE id = $1`
+	err := store.db.QueryRow(query, id).Scan(&storedPassword)
 	if err != nil {
+		fmt.Println(err)
 		return "", err
 	}
 	if password == storedPassword {
 		return "", fmt.Errorf("old password and new password are the same")
 	}
-	changePassQuery := `UPDATE users SET password = $1 WHERE email = $2`
-	_, err = store.db.Exec(changePassQuery, password, email)
+	changePassQuery := `UPDATE users SET password = $1 WHERE id = $2`
+	_, err = store.db.Exec(changePassQuery, password, id)
 	if err != nil {
 		return "", err
 	}
 	return "Password changed successfully", nil
+}
+func (store *PostgresStore) ChangePhone(id string, phone string) (string, error) {
+	var storedPhone string
+	query := `SELECT password FROM users WHERE id = $1`
+	err := store.db.QueryRow(query, id).Scan(&storedPhone)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	if phone == storedPhone {
+		return "", fmt.Errorf("old phone and new phone are the same")
+	}
+	changePassQuery := `UPDATE users SET phone = $1 WHERE id = $2`
+	_, err = store.db.Exec(changePassQuery, phone, id)
+	if err != nil {
+		return "", err
+	}
+	return "Phone successfully changed", nil
 }
 func ConnectDB() (*PostgresStore, error) {
 	const (
@@ -102,6 +120,7 @@ func ConnectDB() (*PostgresStore, error) {
 func (store *PostgresStore) createUserTable() error {
 	query := `CREATE TABLE IF NOT EXISTS public.users
 	(
+		id SERIAL PRIMARY KEY,
 		"firstName" character varying(100) COLLATE pg_catalog."default",
 		"lastName" character varying(100) COLLATE pg_catalog."default",
 		email character varying(100) COLLATE pg_catalog."default",

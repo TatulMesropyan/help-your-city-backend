@@ -24,9 +24,8 @@ func main() {
 	{
 		authRouter.POST("/register", authController.RegisterUserHandler)
 		authRouter.POST("/sign-in", authController.SignInUserHandler)
-		authRouter.PUT("/change-password/:userId")
-		authRouter.PUT("/change-email/:userId")
-		authRouter.PUT("/change-phone/:userId")
+		authRouter.PUT("/change-password/:userId", authController.ChangePasswordHandler)
+		authRouter.PUT("/change-phone/:userId", authController.ChangePhoneHandler)
 	}
 	postsRouter := router.Group("/posts")
 	{

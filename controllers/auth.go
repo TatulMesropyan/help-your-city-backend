@@ -23,3 +23,9 @@ func (ac *App) RegisterUserHandler(c *gin.Context) {
 func (ac *App) SignInUserHandler(c *gin.Context) {
 	services.SignInHandler(ac.DB, c)
 }
+func (ac *App) ChangePasswordHandler(c *gin.Context) {
+	services.ChangePassword(ac.DB, c)
+}
+func (ac *App) ChangePhoneHandler(c *gin.Context) {
+	services.ChangePhone(ac.DB, c)
+}
