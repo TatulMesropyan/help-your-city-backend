@@ -1,32 +1,38 @@
 package main
 
 import (
+	"help-your-city-backend/config"
+	"help-your-city-backend/controllers"
 	"log"
-	"rest-api-go/config"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	_, err := config.ConnectDB()
+	db, err := config.ConnectDB()
 	if err != nil {
 		log.Fatal(err)
 	}
+	app := &controllers.App{
+		DB: db,
+	}
+
 	router := gin.Default()
 
+	authController := controllers.NewAuthController(app)
 	authRouter := router.Group("/auth")
 	{
-		authRouter.POST("/register")
-		authRouter.POST("/sign-in")
-		authRouter.PUT("/change-password")
-		authRouter.PUT("/change-email")
-		authRouter.PUT("/change-phone")
+		authRouter.POST("/register", authController.RegisterUserHandler)
+		authRouter.POST("/sign-in", authController.SignInUserHandler)
+		authRouter.PUT("/change-password/:userId")
+		authRouter.PUT("/change-email/:userId")
+		authRouter.PUT("/change-phone/:userId")
 	}
 	postsRouter := router.Group("/posts")
 	{
 		postsRouter.POST("/all-posts")
-		postsRouter.POST("/submit")
+		postsRouter.POST("/")
 		postsRouter.POST("/read")
 	}
-
+	router.Run()
 }

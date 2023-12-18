@@ -2,13 +2,72 @@ package config
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
+
+	"help-your-city-backend/models"
 
 	_ "github.com/lib/pq"
 )
 
-func ConnectDB() (*sql.DB, error) {
+type UserStorage interface {
+	RegisterUser(*models.User) error
+	SignInUser(email, password string) string
+	DeleteUser(email, password string) error
+	ChangePassword(email, password string) error
+	ChangePhone(email, password string) error
+}
+type PostgresStore struct {
+	db *sql.DB
+}
+
+func (store *PostgresStore) RegisterUser(user *models.User) error {
+	fmt.Println(user.FirstName)
+	query := `
+        INSERT INTO users ("firstName", "lastName", email, birthday, password, phone)
+        VALUES ($1, $2, $3, $4, $5, $6)
+    `
+	_, err := store.db.Exec(query, user.FirstName, user.LastName, user.Email, user.Birthday, user.Password, user.Phone)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (store *PostgresStore) SignInUser(email, password string) (string, error) {
+	var storedPassword string
+	query := `SELECT password FROM users WHERE email = $1`
+	err := store.db.QueryRow(query, email).Scan(&storedPassword)
+	if err != nil {
+		return "", err
+	}
+
+	if password != storedPassword {
+		return "", errors.New("invalid password")
+	}
+
+	return "User authenticated successfully", nil
+}
+
+func (store *PostgresStore) ChangePassword(email, password string) (string, error) {
+	var storedPassword string
+	query := `SELECT password FROM users WHERE email = $1`
+	err := store.db.QueryRow(query, email).Scan(&storedPassword)
+	if err != nil {
+		return "", err
+	}
+	if password == storedPassword {
+		return "", fmt.Errorf("old password and new password are the same")
+	}
+	changePassQuery := `UPDATE users SET password = $1 WHERE email = $2`
+	_, err = store.db.Exec(changePassQuery, password, email)
+	if err != nil {
+		return "", err
+	}
+	return "Password changed successfully", nil
+}
+func ConnectDB() (*PostgresStore, error) {
 	const (
 		PORT        = 5432
 		DB_PASSWORD = "adrine2009"
@@ -35,5 +94,25 @@ func ConnectDB() (*sql.DB, error) {
 	}
 
 	log.Println("Connected to the database")
-	return db, nil
+	return &PostgresStore{
+		db: db,
+	}, nil
+}
+
+func (store *PostgresStore) createUserTable() error {
+	query := `CREATE TABLE IF NOT EXISTS public.users
+	(
+		"firstName" character varying(100) COLLATE pg_catalog."default",
+		"lastName" character varying(100) COLLATE pg_catalog."default",
+		email character varying(100) COLLATE pg_catalog."default",
+		birthday date,
+		password character varying(100) COLLATE pg_catalog."default",
+		phone character varying(25) COLLATE pg_catalog."default"
+	)`
+
+	_, err := store.db.Exec(query)
+	return err
+}
+func InitUsers(store *PostgresStore) {
+	store.createUserTable()
 }

@@ -1,4 +1,4 @@
-module rest-api-go
+module help-your-city-backend
 
 go 1.20
 

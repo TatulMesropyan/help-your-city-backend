@@ -1,11 +1,11 @@
 package models
 
 type User struct {
-	id        int    `json:"id"`
-	firstName string `json:"firstName"`
-	lastName  string `json:"lastName"`
-	email     string `json:"email"`
-	birthday  string `json:"birthday"`
-	phone     int    `json:"phone"`
-	password  string `json:"password"`
+	Id        int    `json:"id"`
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+	Email     string `json:"email"`
+	Birthday  string `json:"birthday"`
+	Phone     int    `json:"phone"`
+	Password  string `json:"password"`
 }

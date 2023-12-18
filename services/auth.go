@@ -1,31 +1,40 @@
 package services
 
 import (
-	"database/sql"
 	"fmt"
-
-	"rest-api-go/models"
+	"help-your-city-backend/config"
+	"help-your-city-backend/models"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
-type AuthController struct {
-	Context *gin.Context
-	DB      *sql.DB
+func RegisterUser(store *config.PostgresStore, ctx *gin.Context) {
+	var user models.User
+	if err := ctx.ShouldBindJSON(&user); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	fmt.Println(user.Id)
+	err := store.RegisterUser(&user)
+	fmt.Println(user)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"message": "User registered successfully"})
 }
+func SignInHandler(store *config.PostgresStore, ctx *gin.Context) {
+	var user models.User
+	if err := ctx.ShouldBindJSON(&user); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	message, err := store.SignInUser(user.Email, user.Password)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 
-func RegisterUser(c *gin.Context, db *sql.DB) {
-	c.Header("Content-Type", "application/json")
-	var _ models.User
-	fmt.Println(c.Request.Body)
+	ctx.JSON(http.StatusOK, gin.H{"message": message})
 }
-
-// func (c *gin.Context) SignInUser(db *sql.DB) error {
-// }
-
-// func DeletePost(c *gin.Context, db *sql.DB) error {
-// 	return c.
-// }
-// func EdiPost(c *gin.Context, db *sql.DB) error {
-// 	return c.
-// }
