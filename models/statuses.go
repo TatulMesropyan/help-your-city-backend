@@ -1,4 +1,4 @@
-// package models
+package models
 
 // type Status struct {
 // 	id     int    `json:"id"`
