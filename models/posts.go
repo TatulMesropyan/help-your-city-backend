@@ -1,4 +1,4 @@
-// package models
+package models
 
 // type Post struct {
 // 	id          int      `json:"id"`
