@@ -1,4 +1,4 @@
-package services
+package service
 
 // func  (c *gin.Context) GetAllPosts (db *sql.DB) gin.HandlerFunc {
 // 	return ""
